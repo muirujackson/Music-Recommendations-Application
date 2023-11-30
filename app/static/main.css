@@ -1,0 +1,45 @@
+/* static/main.css */
+
+/* Importing Font Awesome for the search icon */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
+
+
+.logo img {
+    width: 100px; /* Adjust logo width */
+    height: auto;
+    margin-right: 20px;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+}
+
+
+
+
+.big-round-input {
+    flex: 1;
+    width: 300px;
+    padding: 8px 30px 8px 10px;
+    font-size: 20px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    background-color: #f5f5f5;
+    outline: none;
+    height: 40px;
+}
+
+.search-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    margin-left: -38px;
+    border-radius: 0 35px 35px 0;
+    background-color: #f5f5f5;
+    transition: background-color 0.3s ease;
+}
+.search-button:hover {
+    background-color: #ddd;
+}

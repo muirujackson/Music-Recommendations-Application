@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+    <h1>Search Results for "{{ query }}"</h1>
+
+    <ul>
+        {% for item in items %}
+            <li>
+                <input type="button" value="play" onclick="playSong('{{ item.uri }}')">
+                <input type="button" value="like" onclick="playSong('{{ item.uri }}')"> <br>
+
+                <strong>{{ item.name }}</strong> by {{ item.artists[0].name }} <br>
+                Album: {{ item.album.name }} <br>
+                <!-- Add more song details as needed -->
+                <img src="{{ item.album.images[0].url }}" alt="{{ item.name }}" width="60px" height="60px" Image">
+                <!-- Display song image -->
+            </li>
+            <hr> <!-- Add a horizontal line between each song -->
+        {% endfor %}
+    </ul>
+    <script>
+        // Function to play the selected song
+            async function playSong(uri) {
+                const token = 'YOUR_ACCESS_TOKEN'; // Replace with a valid Spotify access token
+
+                // Initialize the Spotify Web Playback SDK
+                window.onSpotifyWebPlaybackSDKReady = () => {
+                    const player = new Spotify.Player({
+                        name: 'Web Playback SDK Player',
+                        getOAuthToken: cb => { cb(token); }
+                    });
+
+                    // Connect to the player
+                    player.connect().then(success => {
+                        if (success) {
+                            console.log('Web Playback SDK connected to Spotify!');
+                            player.resume(); // Resume playback
+                            player.play({ uris: [uri] }); // Play the selected song
+                        }
+                    }).catch(error => {
+                        console.error('Error connecting to Spotify', error);
+                    });
+                };
+            }
+
+    </script>
+
+
+{% endblock %}
