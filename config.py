@@ -1,6 +1,5 @@
 class Config:
     DEBUG = True
-    SECRET_KEY = 'fbfa1bedbc284f5cb1bec0e0870e2542'
     SERVER_NAME = 'localhost:5000'
 
     SESSION_COOKIE_SECURE = False
