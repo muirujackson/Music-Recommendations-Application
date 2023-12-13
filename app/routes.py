@@ -1,14 +1,10 @@
-from flask import Blueprint, render_template, redirect, session, request, url_for
+from flask import Blueprint, render_template, redirect, session, request, jsonify, url_for
 import requests
 from functools import wraps
 import os
 from dotenv import load_dotenv
 from urllib.parse import urlencode
-import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
-
-
-from helpers.spotify_helpers import check_session_validity
+from helpers.spotify_helpers import check_session_validity, refresh_token
 
 """
 redirect, session, url_for
@@ -20,26 +16,40 @@ main_blueprint = Blueprint('main', __name__)
 # Load environment variables from .env
 load_dotenv()
 
-# Spotify credentials
-client_id = os.environ.get('CLIENT_ID')
-client_secret = os.environ.get('CLIENT_SECRET')
-
-# Authenticate with Spotify
-client_credentials_manager = SpotifyClientCredentials(client_id=client_id, client_secret=client_secret)
-sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
-
 @main_blueprint.route('/', strict_slashes=False)
 @check_session_validity
 def index():
+    access_token = session.get('access_token')
 
-    return render_template('index.html')
+    # Endpoint URL for the Global Top 50 playlist
+    # playlist_url = 'https://open.spotify.com/playlist/37i9dQZF1DXcBWIGoYBM5M'
+    playlist_url = 'https://api.spotify.com/v1/playlists/37i9dQZEVXbMDoHDwVN2tF'
 
+    # Headers containing the access token
+    headers = {
+        'Authorization': f'Bearer {access_token}'
+    }
+
+    # Make a GET request to the Spotify API endpoint
+    if access_token is not None:
+        response = requests.get(playlist_url, headers=headers)
+
+        if response.status_code == 200:
+            # Extract playlist details from the response
+            playlist_data = response.json()
+            # Process playlist data as needed
+            return render_template('index.html', playlist_data=playlist_data)
+        else:
+            refresh_token()
+            return f"Failed to retrieve playlist: {response.status_code} - {response.text}"
+    else:
+        return render_template('index.html')
 
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'access_token' not in session:
-            return redirect(url_for('login'))
+            return redirect(url_for('main.login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -83,14 +93,30 @@ def search_results():
 
 
 @main_blueprint.route('/dashboard', strict_slashes=False)
+@login_required
 def dashboard():
+    access_token = session.get('access_token')
+    headers = {
+        'Authorization': 'Bearer ' + access_token
+    }
+
+    # Fetch a user's saved tracks (liked songs)
+    saved_tracks_url = 'https://api.spotify.com/v1/me/tracks'
+    response = requests.get(saved_tracks_url, headers=headers)
+
+    if response.status_code == 200:
+        saved_tracks_data = response.json()['items']
+        return render_template('dashboard.html', saved_tracks=saved_tracks_data)
+    else:
+        return "Failed to fetch saved tracks"
+
     """
     :return:
     ""ample usage of functions from spotify_helpers.py
     #liked_songs = fetch_liked_songs()
     result = other_custom_function()
     # ..."""
-    return "Dashboard content here"
+    # return render_template('dashboard.html')
 
 
 @main_blueprint.route("/login", strict_slashes=False)
@@ -148,16 +174,65 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+@main_blueprint.route('/like-song', methods=['POST'], strict_slashes=False)
+def like_song():
+    access_token = session.get('access_token')
+    track_id = request.form['track_id']
+
+    headers = {
+        'Authorization': 'Bearer ' + access_token,
+        'Content-Type': 'application/json'
+    }
+
+    add_to_library_url = f'https://api.spotify.com/v1/me/tracks?ids={track_id}'
+    response = requests.put(add_to_library_url, headers=headers)
+
+    if response.status_code == 200:
+        return jsonify({'message': 'Song added to liked songs!'})
+    else:
+        print(track_id)
+        return jsonify({'error': 'Failed to add song to liked songs.'}), response.status_code
+    # access_token = session.get('access_token')  # Replace with your access token
+    # track_id = request.form['track_id']
+    #
+    # headers = {
+    #     'Authorization': 'Bearer ' + access_token,
+    #     'Content-Type': 'application/json'
+    # }
+    #
+    # # Add the track to the user's library (liked songs)
+    # add_to_library_url = f'https://api.spotify.com/v1/me/tracks?ids={track_id}'
+    # response = requests.put(add_to_library_url, headers=headers)
+    #
+    # if response.status_code == 200:
+    #
+    #     return print('Song added to liked songs!')
+    # if request.method == 'POST':
+    #     track_id = request.form.get('track_id')  # Get the track ID from the POST request
+    #     # Add logic to handle adding the track to the liked playlist
+    #     # This could involve interacting with the Spotify API or your database
+    #
+    #     # For testing purposes, you can print a message to see if the route is accessed
+    #     print(f"Adding track {track_id} to liked songs.")
+    #
+    #     # Return a response (optional)
+    #     return "Song liked successfully"  # You can customize this response as needed
+    # else:
+    #     return "Invalid request method"
+    # print(3)
+    # return 'Failed to add song to liked songs'
+
+
 # Define a context processor function for the blueprint
 @main_blueprint.app_context_processor
 def common_variables():
     common_var = "This is a common variable in the blueprint context"
     # Accessing the stored access token
-    a_token = session.get('access_token')
-    if a_token is not None:
+    access_token = session.get('access_token')
+    if access_token is not None:
         logged_in = True
     else:
         logged_in = False
-    return {'logged_in': logged_in, 'a_token': a_token}
+    return {'logged_in': logged_in, 'access_token': access_token}
 
 

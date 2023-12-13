@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Music Recommendation App{% endblock %}
+
+{% block content %}
+<header>
+        <h1>Welcome to Our Music Recommendation App!</h1>
+        <p>Discover personalized music recommendations based on your favorite songs.</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>How It Works</h2>
+            <p>Our app uses your liked songs on Spotify to curate a customized list of recommendations. To get started:</p>
+            <ol>
+                <li>Create or log in to your Spotify account.</li>
+                <li>Login to our app using your Spotify credentials.</li>
+                <li>Explore personalized music recommendations based on your liked songs!</li>
+            </ol>
+        </section>
+
+        <section>
+            <h2>Features</h2>
+            <ul>
+                <li>Personalized music recommendations</li>
+                <li>Based on your liked songs in Spotify</li>
+                <li>User-friendly interface</li>
+                <!-- Add more features as needed -->
+            </ul>
+        </section>
+    </main>
+
+    <footer>
+        <p>Ready to explore new music? Login with Spotify and discover your personalized recommendations!</p>
+        <a href="/login" class="btn btn-primary">Login with Spotify</a>
+    </footer>
+
+{% endblock %}

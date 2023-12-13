@@ -3,27 +3,47 @@
 {% block title %}Search Results{% endblock %}
 
 {% block content %}
-    <h1>Search Results for "{{ query }}"</h1>
+    <h1>Search Results for "{{ query }}" </h1>
 
-    <ul>
-        {% for item in items %}
-            <li>
-                <input type="button" value="play" onclick="playSong('{{ item.uri }}')">
-                <input type="button" value="like" onclick="playSong('{{ item.uri }}')"> <br>
 
-                <strong>{{ item.name }}</strong> by {{ item.artists[0].name }} <br>
-                Album: {{ item.album.name }} <br>
-                <!-- Add more song details as needed -->
-                <img src="{{ item.album.images[0].url }}" alt="{{ item.name }}" width="60px" height="60px" Image">
-                <!-- Display song image -->
-            </li>
-            <hr> <!-- Add a horizontal line between each song -->
-        {% endfor %}
-    </ul>
+    <div class="row">
+    {% for item in items %}
+        <div class="col-lg-3 mb-4"> <!-- Use 'col-lg-3' for large screens, adjust as needed -->
+            <div class="card">
+                <img src="{{ item.album.images[0].url }}" alt="{{ item.name }}" class="img-fluid">
+                <div class="card-body">
+                    <!-- Add more song details as needed -->
+                    <h5 class="card-title">{{ item.name }}</h5>
+                    <p class="card-text">{{ item.artists[0].name }}</p>
+                    <button class="btn btn-primary like-btn" data-track-id="{{ item.id }}">Like</button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Song Added Successfully</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        The song has been added to your playlist.
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                </div>
+            </div>
+        </div>
+        {% if loop.index % 4 == 0 %}</div><div class="row">{% endif %}
+    {% endfor %}
+    </div>
     <script>
         // Function to play the selected song
             async function playSong(uri) {
-                const token = 'YOUR_ACCESS_TOKEN'; // Replace with a valid Spotify access token
+                const token = '{{ access_token }}'; // Replace with a valid Spotify access token
 
                 // Initialize the Spotify Web Playback SDK
                 window.onSpotifyWebPlaybackSDKReady = () => {

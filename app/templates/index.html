@@ -3,5 +3,84 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-    <p>Logged in status: {{ logged_in }}</p>
+    <!-- Check if playlist data exists -->
+    {% if playlist_data %}
+        <h2>{{ playlist_data['name'] }}</h2>
+        <p>By: {{ playlist_data['owner']['display_name'] }}</p>
+
+        <h3>Songs:</h3>
+            <!-- Loop through each track in the playlist and display song details -->
+        {% for track in playlist_data['tracks']['items'] %}
+            <div class="row">
+                {% for track in playlist_data['tracks']['items'] %}
+                    <div class="col-lg-3 mb-4"> <!-- Use 'col-lg-3' for large screens, adjust as needed -->
+                        <div class="card" style="width: 18rem;">
+                            <img src="{{ track['track']['album']['images'][0]['url'] }}" alt="{{ track['track']['name'] }}" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ track['track']['name'] }}</h5>
+                                <p class="card-text">{{ track['track']['artists'][0]['name'] }}</p>
+                                <button class="btn btn-primary like-btn" data-track-id="{{ track['track']['id'] }}">Like</button>
+
+                                <!-- Modal -->
+                                <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                  <div class="modal-dialog">
+                                    <div class="modal-content">
+                                      <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Song Added Successfully</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                      </div>
+                                      <div class="modal-body">
+                                        The song has been added to your playlist.
+                                      </div>
+                                      <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if loop.index % 4 == 0 %}</div><div class="row">{% endif %}
+                {% endfor %}
+            </div>
+
+
+{#                <li>{{ track['track']['name'] }} by {{ track['track']['artists'][0]['name'] }}</li>#}
+        {% endfor %}
+    {% else %}
+        <main style="max-width: 1200px; margin: 20px auto; padding: 20px;">
+
+        <header>
+            <h1>Welcome to Our Music Recommendation App!</h1>
+            <p>Discover personalized music recommendations based on your favorite songs.</p>
+        </header>
+
+            <section>
+                <h2>How It Works</h2>
+                <p>Our app uses your liked songs on Spotify to curate a customized list of recommendations. To get started:</p>
+                <ol>
+                    <li>Create or log in to your Spotify account.</li>
+                    <li>Login to our app using your Spotify credentials.</li>
+                    <li>Explore personalized music recommendations based on your liked songs!</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>Features</h2>
+                <ul>
+                    <li>Personalized music recommendations</li>
+                    <li>Based on your liked songs in Spotify</li>
+                    <li>User-friendly interface</li>
+                    <!-- Add more features as needed -->
+                </ul>
+            </section>
+
+
+        <footer>
+            <p>Ready to explore new music? Login with Spotify and discover your personalized recommendations!</p>
+            <a href="/login" class="btn btn-primary">Login with Spotify</a>
+        </footer>
+    </main>
+    {% endif %}
 {% endblock %}

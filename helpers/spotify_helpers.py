@@ -14,7 +14,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'access_token' not in session:
-            return redirect(url_for('login'))
+            return redirect(url_for('main.login'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -36,14 +36,15 @@ def refresh_token():
 def check_session_validity(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        if 'access_token' not in session or session_expired():
-            return redirect(url_for('login'))
+        if session_expired():
+            refresh_token()
+            return redirect(url_for('main.logout'))
         return func(*args, **kwargs)
     return wrapper
 
-
+# 'access_token' not in session or
 def session_expired():
     last_activity_time = session.get('last_activity_time')
-    if last_activity_time and (datetime.now() - last_activity_time > timedelta(minutes=1)):
+    if last_activity_time and (datetime.now() - last_activity_time > timedelta(minutes=30)):
         return True
     return False
