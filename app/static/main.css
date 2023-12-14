@@ -20,6 +20,16 @@ body {
     align-items: center;
 }
 
+logo-container {
+    text-align: center; /* Center the image horizontally */
+    margin-bottom: 20px; /* Add margin to create space between the image and the header */
+}
+
+.logo-container img {
+    width: auto; /* Set the width of the image */
+    height: auto; /* Maintain aspect ratio */
+}
+
 
 
 
