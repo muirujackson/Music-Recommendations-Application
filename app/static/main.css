@@ -26,7 +26,7 @@ logo-container {
 }
 
 .logo-container img {
-    width: auto; /* Set the width of the image */
+    width: 100%; /* Set the width of the image */
     height: auto; /* Maintain aspect ratio */
 }
 
