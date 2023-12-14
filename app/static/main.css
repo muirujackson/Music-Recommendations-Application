@@ -117,6 +117,10 @@ section {
     .main-content {
         margin-left: 0;
     }
+    .big-round-input {
+    width: 70%; /* Adjust the width value */
+    max-width: 300px; /* Set a maximum width if needed */
+  }
 }
 footer {
     /*margin-top: auto; !* Push the footer to the bottom *!*/
