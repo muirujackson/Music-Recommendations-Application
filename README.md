@@ -1,2 +1,2 @@
 ﻿# Music-Recommendations-Application
- link to the project http://afripulse.tech/
+ link to the project https://afripulse.tech/
