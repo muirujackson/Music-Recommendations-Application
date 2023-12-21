@@ -16,6 +16,7 @@ main_blueprint = Blueprint('main', __name__)
 # Load environment variables from .env
 load_dotenv()
 
+
 @main_blueprint.route('/', strict_slashes=False)
 @check_session_validity
 def index():
@@ -45,12 +46,14 @@ def index():
     else:
         return render_template('index.html')
 
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'access_token' not in session:
             return redirect(url_for('main.login'))
         return f(*args, **kwargs)
+
     return decorated_function
 
 
@@ -105,8 +108,9 @@ def dashboard():
     response = requests.get(saved_tracks_url, headers=headers)
 
     if response.status_code == 200:
+        total_liked_songs = response.json()['total']
         saved_tracks_data = response.json()['items']
-        return render_template('dashboard.html', saved_tracks=saved_tracks_data)
+        return render_template('dashboard.html', total_liked_songs=total_liked_songs, saved_tracks=saved_tracks_data)
     else:
         return "Failed to fetch saved tracks"
 
@@ -174,6 +178,50 @@ def logout():
     return redirect(url_for('main.index'))
 
 
+@main_blueprint.route('/recommendation', methods=['GET'], strict_slashes=False)
+def recommendation():
+    access_token = session.get('access_token')  # Get the user's access token (ensure it's retrieved properly)
+
+    if access_token:
+        headers = {
+            'Authorization': 'Bearer ' + access_token
+        }
+
+        # Fetch a user's saved tracks (liked songs)
+        saved_tracks_url = 'https://api.spotify.com/v1/me/tracks'
+        response = requests.get(saved_tracks_url, headers=headers)
+
+        if response.status_code == 200:
+            # Extract the track IDs of liked songs
+            liked_songs = [track['track']['id'] for track in response.json()['items']]
+
+            # Recommendation endpoint URL
+            recommendation_endpoint = 'https://api.spotify.com/v1/recommendations'
+
+            # Data to be sent to the recommendation endpoint
+            data = {
+                'seed_tracks': liked_songs,
+                # Include other necessary data for recommendations (e.g., market, limit, etc.)
+            }
+
+            # Send the data to the recommendation endpoint
+            recommendation_response = requests.get(recommendation_endpoint, headers=headers, params=data)
+
+            if recommendation_response.status_code == 200:
+                # Successfully received recommended songs from Spotify
+                recommendation_data = recommendation_response.json()
+                recommended_songs = recommendation_data.get('tracks', [])
+
+                # Return the recommended songs as JSON
+                return jsonify({'recommended_songs': recommended_songs})
+            else:
+                return jsonify(
+                    {'message': f"Failed to fetch recommendations: {recommendation_response.status_code}"}), 500
+        else:
+            return jsonify({'message': f"Failed to fetch liked songs: {response.status_code}"}), 500
+    else:
+        return jsonify({'message': 'Access token not found'}), 401
+
 @main_blueprint.route('/like-song', methods=['POST'], strict_slashes=False)
 def like_song():
     access_token = session.get('access_token')
@@ -234,5 +282,3 @@ def common_variables():
     else:
         logged_in = False
     return {'logged_in': logged_in, 'access_token': access_token}
-
-
