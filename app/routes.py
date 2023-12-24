@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, session, request, jsonify, url_for
+from flask import Blueprint, render_template, abort, redirect, session, request, jsonify, url_for
 import requests
 from functools import wraps
 import os
@@ -42,7 +42,7 @@ def index():
             return render_template('index.html', playlist_data=playlist_data)
         else:
             refresh_token()
-            return f"Failed to retrieve playlist: {response.status_code} - {response.text}"
+            return abort(401)
     else:
         return render_template('index.html')
 
@@ -99,6 +99,28 @@ def search_results():
 @login_required
 def dashboard():
     access_token = session.get('access_token')
+    if access_token:
+        headers = {
+            'Authorization': 'Bearer ' + access_token
+        }
+
+        # Fetch a user's saved tracks (liked songs)
+        saved_tracks_url = 'https://api.spotify.com/v1/me/tracks'
+        response = requests.get(saved_tracks_url, headers=headers)
+
+        if response.status_code == 200:
+            total_liked_songs = response.json()['total']
+            saved_tracks_data = response.json()['items']
+            return render_template('dashboard.html', total_liked_songs=total_liked_songs,
+                                   saved_tracks=saved_tracks_data)
+        else:
+            return abort(401)
+    else:
+        return render_template('index.html')
+
+
+
+
     headers = {
         'Authorization': 'Bearer ' + access_token
     }
@@ -112,15 +134,12 @@ def dashboard():
         saved_tracks_data = response.json()['items']
         return render_template('dashboard.html', total_liked_songs=total_liked_songs, saved_tracks=saved_tracks_data)
     else:
-        return "Failed to fetch saved tracks"
+        return abort(401)
 
-    """
-    :return:
-    ""ample usage of functions from spotify_helpers.py
-    #liked_songs = fetch_liked_songs()
-    result = other_custom_function()
-    # ..."""
-    # return render_template('dashboard.html')
+
+@main_blueprint.errorhandler(401)
+def page_not_found(error):
+    return render_template('index.html'), 401
 
 
 @main_blueprint.route("/login", strict_slashes=False)
@@ -222,6 +241,7 @@ def recommendation():
     else:
         return jsonify({'message': 'Access token not found'}), 401
 
+
 @main_blueprint.route('/like-song', methods=['POST'], strict_slashes=False)
 def like_song():
     access_token = session.get('access_token')
@@ -269,6 +289,27 @@ def like_song():
     #     return "Invalid request method"
     # print(3)
     # return 'Failed to add song to liked songs'
+
+
+@main_blueprint.route('/delete-track', methods=['DELETE'], strict_slashes=False)
+def delete_track():
+    access_token = session.get('access_token')  # Get the user's access token
+
+    if access_token:
+        track_id = request.json.get('track_id')  # Get the track ID from JSON data
+
+        # Make a DELETE request to Spotify API to remove the track
+        delete_track_url = f'https://api.spotify.com/v1/me/tracks?ids={track_id}'
+        headers = {'Authorization': 'Bearer ' + access_token}
+
+        response = requests.delete(delete_track_url, headers=headers)
+
+        if response.status_code == 200:
+            return jsonify({'message': 'Track deleted successfully'})
+        else:
+            return jsonify({'error': 'Failed to delete track'}), response.status_code
+    else:
+        return jsonify({'error': 'Access token not found'}), 401
 
 
 # Define a context processor function for the blueprint

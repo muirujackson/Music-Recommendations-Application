@@ -146,13 +146,16 @@ h2 {
     font-size: 24px;
 }
 
-#songs_recommomemded {
+#songs_recommended {
     margin-bottom: 10px;
     margin-top: 10px;
     border-style: solid;
     padding: 10px;
 
 
+}
+#getRecommendation {
+    margin-bottom: 20px;
 }
 
 ol, ul {

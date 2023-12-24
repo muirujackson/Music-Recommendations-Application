@@ -16,33 +16,18 @@
             </nav>
                 <div class="main-content">
                     <!-- Liked Playlists Section -->
-                    <section id="liked">
-                        <!-- Check if playlist data exists -->
-                        {% if playlist_data %}
-                            <h2>{{ playlist_data['name'] }}</h2>
-                            <p>By: {{ playlist_data['owner']['display_name'] }}</p>
 
-                            <h3>Songs:</h3>
-                            <ul>
-                                <!-- Loop through each track in the playlist and display song details -->
-                                {% for track in playlist_data['tracks']['items'] %}
-                                    <li>{{ track['track']['name'] }} by {{ track['track']['artists'][0]['name'] }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% else %}
-                            <p>No playlist data available.</p>
-                        {% endif %}
-                    </section>
                     <!-- Liked Playlists Section -->
                     <section id="liked">
                         <h1>Liked Playlists</h1>
                         <div class="row">
                             {% for track in saved_tracks %}
-                                <div class="col-md-3 mb-3">
+                                <div class="col-md-3 mb-3 song">
                                     <div class="card">
                                         <div class="card-body">
                                             <h5 class="card-title">{{ track['track']['name'] }}</h5>
                                             <p class="card-text">{{ track['track']['artists'][0]['name'] }}</p>
+                                            <button class="delete-btn" data-track-id="{{ track.track.id }}">Delete</button>
                                             <!-- Add more song details as needed -->
                                         </div>
                                     </div>
@@ -69,4 +54,5 @@
                     </section>
                 </div>
     </div>
+
 {% endblock %}
